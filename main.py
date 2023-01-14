@@ -1,3 +1,5 @@
+import random
+
 f = open('theonceandfutureking.txt', 'r')
 cw = open("commonwords.txt", 'r')
 book = f.read().split()
@@ -12,6 +14,7 @@ for word in book:
           common_word_found = False
         if word == common_word:
           common_word_found = True
+          break
     if common_word_found == False:
       cleaned_book.append(word)
     common_word_found = False
@@ -19,5 +22,6 @@ for word in book:
 
 print(len(book))
 print(len(cleaned_book))
+print(cleaned_book[random.randint(0, len(cleaned_book))])
 
 f.close()
