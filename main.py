@@ -15,8 +15,8 @@ def generate_chapter_info():
   locative_info = "Chapter " + str(chapter) + ", Pages " + str(page) + "-" + str(page+pages_per_chapter-1)
   words = generate_words()
   
-def get_word_info(word):
-  definition = dictionary.meaning(word, disable_errors=True).values()
+def get_definition(word):
+  definition = list(dictionary.meaning(word, disable_errors=True).values())[0][0]
   return definition
 
 def word_exists(word):
@@ -38,9 +38,11 @@ def generate_words():
             common_word_found = True
             break
       if common_word_found == False and word_exists(word):
-        words[word] = get_word_info(word)
+        words[word] = get_definition(word)
         cleaned_book.append(word)
       common_word_found = False
   return words
+
+print(generate_words())
 
 book_file.close()
