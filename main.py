@@ -1,5 +1,6 @@
-from PyDictionary import PyDictionary
-dictionary = PyDictionary()
+import nltk
+nltk.download("wordnet")
+from nltk.corpus import wordnet
 
 book_file = open('theonceandfutureking.txt', 'r')
 common_words = open("commonwords.txt", 'r').read().split()
@@ -16,14 +17,21 @@ def generate_chapter_info():
   words = generate_words()
   
 def get_definition(word):
-  definition = list(dictionary.meaning(word, disable_errors=True).values())[0][0]
-  return definition
+    definition = None
+    for synset in wordnet.synsets(word):
+        definition = synset.definition()
+        break
+    return definition
 
 def word_exists(word):
-  if dictionary.meaning(word, disable_errors=True):
-    return True
-  else:
-    return False
+    definition = None
+    for synset in wordnet.synsets(word):
+        definition = synset.definition()
+        break
+    if definition:
+      return True
+    else:
+      return False
 
 def generate_words():
   words = {}
