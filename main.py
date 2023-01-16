@@ -1,3 +1,4 @@
+import random
 import nltk
 from nltk.corpus import wordnet
 
@@ -11,9 +12,21 @@ pages_per_chapter = 7
 chapter = 1
 page = 1
 
+def main():
+  generate_chapter_info()
+
 def generate_chapter_info():
-  locative_info = "Chapter " + str(chapter) + ", Pages " + str(page) + "-" + str(page+pages_per_chapter-1)
-  words = generate_words()
+    global chapter
+    global page
+    words = generate_words()
+    for i in range(1, chapter_count):
+        locative_info = f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
+        word, definition = random.choice(list(words.items()))
+        vocab = f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
+        print(locative_info)
+        print(vocab + "\n")
+        chapter += 1
+        page += pages_per_chapter
   
 def get_definition(word):
     definition = None
@@ -50,6 +63,7 @@ def generate_words():
       common_word_found = False
   return words
 
-print(generate_words())
+if __name__ == "__main__":
+    main()
 
 book_file.close()
