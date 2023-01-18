@@ -19,12 +19,16 @@ def generate_chapter_info():
     global chapter
     global page
     words = generate_words()
+
+    # Make reading log
     for i in range(1, chapter_count):
         locative_info = f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
         word, definition = random.choice(list(words.items()))
+        connotation = find_sentence(word)
         vocab = f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
         print(locative_info)
-        print(vocab + "\n")
+        print(vocab)
+        print(connotation)
         chapter += 1
         page += pages_per_chapter
   
@@ -34,6 +38,15 @@ def get_definition(word):
         definition = synset.definition()
         break
     return definition
+
+def find_sentence(word):
+   split_sentence_book = book_file.read().split(".")
+
+   for sentence in split_sentence_book:
+      if word in sentence:
+        return str(sentence)
+      
+# print(find_sentence("flashes"))
 
 def word_exists(word):
     definition = None
