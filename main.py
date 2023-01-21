@@ -24,13 +24,20 @@ def generate_chapter_info():
     for i in range(1, chapter_count):
         locative_info = f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
         word, definition = random.choice(list(words.items()))
-        connotation = find_sentence(word)
+        connotation = find_sentence("laboriously")
         vocab = f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
         print(locative_info)
         print(vocab)
         print(connotation)
         chapter += 1
         page += pages_per_chapter
+
+def find_sentence(word):
+  split_sentence_book = book_file.read().split(".")
+  for sentence in split_sentence_book:
+    if word in sentence:
+      print("Hey")
+      return sentence
   
 def get_definition(word):
     definition = None
@@ -38,15 +45,8 @@ def get_definition(word):
         definition = synset.definition()
         break
     return definition
-
-def find_sentence(word):
-   split_sentence_book = book_file.read().split(".")
-
-   for sentence in split_sentence_book:
-      if word in sentence:
-        return str(sentence)
       
-# print(find_sentence("flashes"))
+# print(find_sentence("laboriously"))
 
 def word_exists(word):
     definition = None
@@ -58,10 +58,13 @@ def word_exists(word):
     else:
       return False
 
+def split_book():
+    return book_file.read().replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("-", "").replace("—", "").lower().split()
+
 def generate_words():
   words = {}
 
-  unpunctuated_book = book_file.read().replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("-", "").replace("—", "").lower().split() 
+  unpunctuated_book = split_book()
 
   for word in unpunctuated_book:
       for common_word in common_words:
