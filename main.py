@@ -15,14 +15,14 @@ chapter = 1
 page = 1
 
 def main(chapter, page, text, chapter_count):
-  generate_chapter_info(chapter, page, text, chapter_count)
+  generate_chapter_info(chapter, page, chapter_count)
 
-def generate_chapter_info(chapter, page, text, chapter_count):
+def generate_chapter_info(chapter, page, chapter_count):
     words = generate_words()
 
     # Make reading log
     for i in range(1, chapter_count):
-        locative_info = f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
+        locative_info = generate_locative_info()
         word, definition = random.choice(list(words.items()))
         connotation = find_sentence(word)
         vocab = f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
@@ -32,11 +32,18 @@ def generate_chapter_info(chapter, page, text, chapter_count):
         chapter += 1
         page += pages_per_chapter
 
+def generate_locative_info():
+   return f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
+
+def generate_vocab():
+   pass
+
 def find_sentence(word):
   split_sentence_book = split_book(keep_spaces=True)
   for sentence in split_sentence_book:
     if word in sentence:
-      return sentence
+      end_char = sentence.find(word) + (len(word) - 1)
+      return sentence[:end_char + 20]
   
 def get_definition(word):
     definition = None
