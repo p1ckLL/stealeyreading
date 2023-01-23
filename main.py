@@ -3,6 +3,8 @@ import nltk
 from nltk.corpus import wordnet
 
 book_file = open('theonceandfutureking.txt', 'r')
+text = book_file.read()
+book_file.close()
 common_words = open("commonwords.txt", 'r').read().split()
 common_word_found = False
 cleaned_book = []
@@ -12,31 +14,28 @@ pages_per_chapter = 7
 chapter = 1
 page = 1
 
-def main():
-  generate_chapter_info()
+def main(chapter, page, text, chapter_count):
+  generate_chapter_info(chapter, page, text, chapter_count)
 
-def generate_chapter_info():
-    global chapter
-    global page
+def generate_chapter_info(chapter, page, text, chapter_count):
     words = generate_words()
 
     # Make reading log
     for i in range(1, chapter_count):
         locative_info = f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
         word, definition = random.choice(list(words.items()))
-        connotation = find_sentence("laboriously")
+        connotation = find_sentence(word)
         vocab = f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
         print(locative_info)
         print(vocab)
-        print(connotation)
+        print(connotation + "\n")
         chapter += 1
         page += pages_per_chapter
 
 def find_sentence(word):
-  split_sentence_book = book_file.read().split(".")
+  split_sentence_book = split_book(keep_spaces=True)
   for sentence in split_sentence_book:
     if word in sentence:
-      print("Hey")
       return sentence
   
 def get_definition(word):
@@ -58,13 +57,16 @@ def word_exists(word):
     else:
       return False
 
-def split_book():
-    return book_file.read().replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("-", "").replace("—", "").lower().split()
+def split_book(keep_spaces):
+    if keep_spaces:
+      return text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace("\n", "").lower().split(".")
+    else:
+      return text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("\n", "").lower().split()
 
 def generate_words():
   words = {}
 
-  unpunctuated_book = split_book()
+  unpunctuated_book = split_book(keep_spaces=False)
 
   for word in unpunctuated_book:
       for common_word in common_words:
@@ -80,9 +82,7 @@ def generate_words():
   return words
 
 if __name__ == "__main__":
-    main()
-
-book_file.close()
+    main(chapter, page, text, chapter_count)
 
 # import nltk
 # import ssl
