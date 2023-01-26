@@ -25,7 +25,7 @@ def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
         locative_info = generate_locative_info(chapter, page, pages_per_chapter)
         word, definition = generate_word_def(words)
         connotation = find_sentence(word)
-        vocab = f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
+        vocab = generate_vocab(page, pages_per_chapter, word, definition)
         print(locative_info)
         print(vocab)
         print(connotation + "\n")
@@ -38,11 +38,8 @@ def generate_locative_info(chapter, page, pages_per_chapter):
 def generate_word_def(words):
   return random.choice(list(words.items()))
 
-def generate_vocab():
-  
-
-def generate_vocab():
-   pass
+def generate_vocab(page, pages_per_chapter, word, definition):
+  return f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
 
 def find_sentence(word):
   split_sentence_book = split_book(keep_spaces=True)
