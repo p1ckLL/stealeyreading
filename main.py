@@ -14,16 +14,16 @@ pages_per_chapter = 7
 chapter = 1
 page = 1
 
-def main(chapter, page, text, chapter_count):
-  generate_chapter_info(chapter, page, chapter_count)
+def main(chapter, page, text, chapter_count, pages_per_chapter):
+  generate_chapter_info(chapter, page, chapter_count, pages_per_chapter)
 
-def generate_chapter_info(chapter, page, chapter_count):
+def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
     words = generate_words()
 
     # Make reading log
     for i in range(1, chapter_count):
-        locative_info = generate_locative_info()
-        word, definition = random.choice(list(words.items()))
+        locative_info = generate_locative_info(chapter, page, pages_per_chapter)
+        word, definition = generate_word_def(words)
         connotation = find_sentence(word)
         vocab = f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
         print(locative_info)
@@ -32,8 +32,14 @@ def generate_chapter_info(chapter, page, chapter_count):
         chapter += 1
         page += pages_per_chapter
 
-def generate_locative_info():
-   return f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
+def generate_locative_info(chapter, page, pages_per_chapter):
+  return f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
+
+def generate_word_def(words):
+  return random.choice(list(words.items()))
+
+def generate_vocab():
+  
 
 def generate_vocab():
    pass
@@ -89,7 +95,7 @@ def generate_words():
   return words
 
 if __name__ == "__main__":
-    main(chapter, page, text, chapter_count)
+    main(chapter, page, text, chapter_count, pages_per_chapter)
 
 # import nltk
 # import ssl
