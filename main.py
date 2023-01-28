@@ -3,9 +3,18 @@ import nltk
 from nltk.corpus import wordnet
 
 book_file = open('theonceandfutureking.txt', 'r')
+heroic_words = open("heroicwords.txt", 'r')
+common_words = open("commonwords.txt", 'r')
+
 text = book_file.read()
+
+heroic_text = heroic_words.read().split()
+common_text = common_words.read().split()
+
 book_file.close()
-common_words = open("commonwords.txt", 'r').read().split()
+heroic_words.close()
+common_words.close()
+
 common_word_found = False
 cleaned_book = []
 chapter_count = 97
@@ -79,7 +88,7 @@ def generate_words():
   unpunctuated_book = split_book(keep_spaces=False)
 
   for word in unpunctuated_book:
-      for common_word in common_words:
+      for common_word in common_text:
           if word != common_word:
             common_word_found = False
           if word == common_word or len(word) < 9:
@@ -91,8 +100,8 @@ def generate_words():
       common_word_found = False
   return words
 
-if __name__ == "__main__":
-    main(chapter, page, text, chapter_count, pages_per_chapter)
+# if __name__ == "__main__":
+#     main(chapter, page, text, chapter_count, pages_per_chapter)
 
 # import nltk
 # import ssl
