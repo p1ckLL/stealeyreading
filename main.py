@@ -1,4 +1,6 @@
 import random
+import requests
+import re
 import nltk
 from nltk.corpus import wordnet
 
@@ -14,6 +16,8 @@ common_text = common_words.read().split()
 book_file.close()
 heroic_words.close()
 common_words.close()
+
+url = "https://summarize-texts.p.rapidapi.com/pipeline"
 
 common_word_found = False
 cleaned_book = []
@@ -37,9 +41,44 @@ def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
         vocab = generate_vocab(page, pages_per_chapter, word, definition)
         print(locative_info)
         print(vocab)
-        print(connotation + "\n")
+        print(connotation)
+        print("Main Idea: " + generate_main_idea(split_on_chapters(split_book(True, True))[i], i) + "\n")
         chapter += 1
         page += pages_per_chapter
+
+def split_on_chapters(text):
+  start = 0
+  chapters = []
+  
+  while True:
+    start = text.find("chapter", start)
+    if start == -1:
+      break
+    end = text.find("chapter", start + 1)
+    if end == -1:
+      end = len(text)
+    chapters.append(text[start:end])
+    start = end
+
+  return chapters
+
+
+def generate_main_idea(data, chapter):
+  payload = {"input": data}
+  headers = {
+	"content-type": "application/json",
+	"X-RapidAPI-Key": "a02923e06dmsh6735565cd058d37p1c7a47jsn0afe938c453b",
+	"X-RapidAPI-Host": "summarize-texts.p.rapidapi.com"
+  }
+
+  response = requests.request("POST", url, json=payload, headers=headers)
+  response_dict = response.json()
+  print(response_dict)
+  main_idea = response_dict["output"][0]["text"]
+  numeral = to_roman(chapter)
+  main_idea.replace("chapter " + numeral, "")
+
+  return main_idea
 
 def generate_locative_info(chapter, page, pages_per_chapter):
   return f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
@@ -51,7 +90,7 @@ def generate_vocab(page, pages_per_chapter, word, definition):
   return f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
 
 def find_sentence(word):
-  split_sentence_book = split_book(keep_spaces=True)
+  split_sentence_book = split_book(True, False)
   for sentence in split_sentence_book:
     if word in sentence:
       end_char = sentence.find(word) + (len(word) - 1)
@@ -76,16 +115,43 @@ def word_exists(word):
     else:
       return False
 
-def split_book(keep_spaces):
+def to_roman(num):
+  m = ["", "M", "MM", "MMM"]
+  c = ["", "C", "CC", "CCC", "CD", "D",
+      "DC", "DCC", "DCCC", "CM "]
+  x = ["", "X", "XX", "XXX", "XL", "L",
+      "LX", "LXX", "LXXX", "XC"]
+  i = ["", "I", "II", "III", "IV", "V",
+      "VI", "VII", "VIII", "IX"]
+  
+  thousands = m[num // 1000]
+  hundreds = c[(num % 1000) // 100]
+  tens = x[(num % 100) // 10]
+  ones = i[num % 10]
+  
+  ans = (thousands + hundreds +
+  tens + ones)
+  
+  return ans
+
+def split_book(keep_spaces, strict_clean):
+  text_to_clean = None 
+  if keep_spaces:
+    text_to_clean = text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace("\n", "").lower()
+  else:
+    text_to_clean = text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("\n", "").lower()
+  if strict_clean:
+    return text_to_clean
+  else:
     if keep_spaces:
-      return text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace("\n", "").lower().split(".")
-    else:
-      return text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("\n", "").lower().split()
+      return text_to_clean.split(".")
+    else: 
+      return text_to_clean.split()
 
 def generate_words():
   words = {}
 
-  unpunctuated_book = split_book(keep_spaces=False)
+  unpunctuated_book = split_book(False, False)
 
   for word in unpunctuated_book:
       for common_word in common_text:
@@ -100,8 +166,8 @@ def generate_words():
       common_word_found = False
   return words
 
-# if __name__ == "__main__":
-#     main(chapter, page, text, chapter_count, pages_per_chapter)
+if __name__ == "__main__":
+    main(chapter, page, text, chapter_count, pages_per_chapter)
 
 # import nltk
 # import ssl
