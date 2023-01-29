@@ -39,10 +39,12 @@ def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
         word, definition = generate_word_def(words)
         connotation = find_sentence(word)
         vocab = generate_vocab(page, pages_per_chapter, word, definition)
+        # significant_statement = generate_significant_statement()
+        # main_idea = "Main Idea: " + generate_main_idea(split_on_chapters(split_book(True, True))[i], i) + "\n")
         print(locative_info)
         print(vocab)
         print(connotation)
-        print("Main Idea: " + generate_main_idea(split_on_chapters(split_book(True, True))[i], i) + "\n")
+        # print(main_idea)
         chapter += 1
         page += pages_per_chapter
 
@@ -62,6 +64,11 @@ def split_on_chapters(text):
 
   return chapters
 
+def generate_significant_statement():
+  for word in heroic_text:
+    statement = find_sentence(word)
+    if statement:
+      print(statement)
 
 def generate_main_idea(data, chapter):
   payload = {"input": data}
@@ -90,7 +97,7 @@ def generate_vocab(page, pages_per_chapter, word, definition):
   return f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
 
 def find_sentence(word):
-  split_sentence_book = split_book(True, False)
+  split_sentence_book = split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False)
   for sentence in split_sentence_book:
     if word in sentence:
       end_char = sentence.find(word) + (len(word) - 1)
@@ -134,16 +141,18 @@ def to_roman(num):
   
   return ans
 
-def split_book(keep_spaces, strict_clean):
-  text_to_clean = None 
-  if keep_spaces:
-    text_to_clean = text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace("\n", "").lower()
-  else:
-    text_to_clean = text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("\n", "").lower()
-  if strict_clean:
+def split_book(keep_periods, return_string, keep_caps, keep_punctuation):
+  text_to_clean = text
+  if not keep_punctuation:
+    text_to_clean = text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace("\n", "")
+  if not keep_punctuation and not keep_periods:
+    text_to_clean = text.replace(";", "").replace(",", "").replace("\"", "").replace("!", "").replace(".", "").replace("\n", "")
+  if not keep_caps:
+    text_to_clean = text_to_clean.lower()
+  if return_string:
     return text_to_clean
   else:
-    if keep_spaces:
+    if keep_periods:
       return text_to_clean.split(".")
     else: 
       return text_to_clean.split()
@@ -151,7 +160,7 @@ def split_book(keep_spaces, strict_clean):
 def generate_words():
   words = {}
 
-  unpunctuated_book = split_book(False, False)
+  unpunctuated_book = split_book(keep_periods=False, return_string=False, keep_caps=False, keep_punctuation=False)
 
   for word in unpunctuated_book:
       for common_word in common_text:
@@ -168,6 +177,7 @@ def generate_words():
 
 if __name__ == "__main__":
     main(chapter, page, text, chapter_count, pages_per_chapter)
+# generate_significant_statement()
 
 # import nltk
 # import ssl
