@@ -1,7 +1,5 @@
 import random
-import requests
 import re
-import nltk
 from nltk.corpus import wordnet
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -42,18 +40,34 @@ def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
         connotation = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False))
         vocab = generate_vocab(page, pages_per_chapter, word, definition)
         significant_statement = significant_statements[i%len(significant_statements)]
-        main_idea = "Main Idea: " + generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]) + "\n"
+        main_idea = cut_sentence(generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]))
         print(locative_info)
         print(vocab)
         print("Connotation: " + "\"" + connotation + "\"")
-        print("Significant Statement: " + significant_statement)
-        print(main_idea)
+        print("Page " + str(random.randint(page, page+pages_per_chapter-1)) + ", Significant Statement: " + significant_statement)
+        print(main_idea + "\n")
         chapter += 1
         page += pages_per_chapter
 
+def cut_sentence(sentence):
+  sentences = sentence.split(".")
+  first_two_sentences = ". ".join(sentences[:2]) + "."
+  return first_two_sentences
+
 def split_on_chapters(text):
-  chapters = re.split(r"(?i)Chapter \d+[^\n]+", text)
-  chapters = [ch for ch in chapters if ch.strip() != ""]
+  start = 0
+  chapters = []
+  
+  while True:
+    start = text.find("Chapter", start)
+    if start == -1:
+      break
+    end = text.find("Chapter", start + 1)
+    if end == -1:
+      end = len(text)
+    chapters.append(text[start:end])
+    start = end
+
   return chapters
 
 def generate_significant_statements():
@@ -71,7 +85,7 @@ def generate_main_idea(text):
   summary = summarizer(parser.document, 1)
   joined_summary = " ".join([str(sent) for sent in summary])
 
-  return joined_summary
+  return "Main Idea: " + joined_summary
 
 def generate_locative_info(chapter, page, pages_per_chapter):
   return f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
@@ -95,8 +109,6 @@ def get_definition(word):
         definition = synset.definition()
         break
     return definition
-      
-# print(find_sentence("laboriously"))
 
 def word_exists(word):
     definition = None
