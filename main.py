@@ -3,6 +3,9 @@ import requests
 import re
 import nltk
 from nltk.corpus import wordnet
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lex_rank import LexRankSummarizer
 
 book_file = open('theonceandfutureking.txt', 'r')
 heroic_words = open("heroicwords.txt", 'r')
@@ -17,8 +20,6 @@ book_file.close()
 heroic_words.close()
 common_words.close()
 
-url = "https://summarize-texts.p.rapidapi.com/pipeline"
-
 common_word_found = False
 cleaned_book = []
 chapter_count = 97
@@ -32,60 +33,45 @@ def main(chapter, page, text, chapter_count, pages_per_chapter):
 
 def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
     words = generate_words()
+    significant_statements = generate_significant_statements()
 
     # Make reading log
     for i in range(1, chapter_count):
         locative_info = generate_locative_info(chapter, page, pages_per_chapter)
         word, definition = generate_word_def(words)
-        connotation = find_sentence(word)
+        connotation = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False))
         vocab = generate_vocab(page, pages_per_chapter, word, definition)
-        # significant_statement = generate_significant_statement()
-        # main_idea = "Main Idea: " + generate_main_idea(split_on_chapters(split_book(True, True))[i], i) + "\n")
+        significant_statement = significant_statements[i%len(significant_statements)]
+        main_idea = "Main Idea: " + generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]) + "\n"
         print(locative_info)
         print(vocab)
-        print(connotation)
-        # print(main_idea)
+        print("Connotation: " + "\"" + connotation + "\"")
+        print("Significant Statement: " + significant_statement)
+        print(main_idea)
         chapter += 1
         page += pages_per_chapter
 
 def split_on_chapters(text):
-  start = 0
-  chapters = []
-  
-  while True:
-    start = text.find("chapter", start)
-    if start == -1:
-      break
-    end = text.find("chapter", start + 1)
-    if end == -1:
-      end = len(text)
-    chapters.append(text[start:end])
-    start = end
-
+  chapters = re.split(r"(?i)Chapter \d+[^\n]+", text)
+  chapters = [ch for ch in chapters if ch.strip() != ""]
   return chapters
 
-def generate_significant_statement():
+def generate_significant_statements():
+  statements = []
   for word in heroic_text:
-    statement = find_sentence(word)
+    statement = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=True, keep_punctuation=False))
     if statement:
-      print(statement)
+      statements.append(statement)
+  return statements
 
-def generate_main_idea(data, chapter):
-  payload = {"input": data}
-  headers = {
-	"content-type": "application/json",
-	"X-RapidAPI-Key": "a02923e06dmsh6735565cd058d37p1c7a47jsn0afe938c453b",
-	"X-RapidAPI-Host": "summarize-texts.p.rapidapi.com"
-  }
+def generate_main_idea(text):
+  parser = PlaintextParser.from_string(text, Tokenizer("english"))
+  summarizer = LexRankSummarizer()
 
-  response = requests.request("POST", url, json=payload, headers=headers)
-  response_dict = response.json()
-  print(response_dict)
-  main_idea = response_dict["output"][0]["text"]
-  numeral = to_roman(chapter)
-  main_idea.replace("chapter " + numeral, "")
+  summary = summarizer(parser.document, 1)
+  joined_summary = " ".join([str(sent) for sent in summary])
 
-  return main_idea
+  return joined_summary
 
 def generate_locative_info(chapter, page, pages_per_chapter):
   return f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
@@ -96,8 +82,8 @@ def generate_word_def(words):
 def generate_vocab(page, pages_per_chapter, word, definition):
   return f"Page {random.randint(page, page+pages_per_chapter-1)}, {word} : {definition}"
 
-def find_sentence(word):
-  split_sentence_book = split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False)
+def find_sentence(word, text):
+  split_sentence_book = text
   for sentence in split_sentence_book:
     if word in sentence:
       end_char = sentence.find(word) + (len(word) - 1)
@@ -121,25 +107,6 @@ def word_exists(word):
       return True
     else:
       return False
-
-def to_roman(num):
-  m = ["", "M", "MM", "MMM"]
-  c = ["", "C", "CC", "CCC", "CD", "D",
-      "DC", "DCC", "DCCC", "CM "]
-  x = ["", "X", "XX", "XXX", "XL", "L",
-      "LX", "LXX", "LXXX", "XC"]
-  i = ["", "I", "II", "III", "IV", "V",
-      "VI", "VII", "VIII", "IX"]
-  
-  thousands = m[num // 1000]
-  hundreds = c[(num % 1000) // 100]
-  tens = x[(num % 100) // 10]
-  ones = i[num % 10]
-  
-  ans = (thousands + hundreds +
-  tens + ones)
-  
-  return ans
 
 def split_book(keep_periods, return_string, keep_caps, keep_punctuation):
   text_to_clean = text
@@ -177,7 +144,6 @@ def generate_words():
 
 if __name__ == "__main__":
     main(chapter, page, text, chapter_count, pages_per_chapter)
-# generate_significant_statement()
 
 # import nltk
 # import ssl
