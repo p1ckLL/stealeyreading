@@ -25,6 +25,7 @@ page_count = 677
 pages_per_chapter = 7
 chapter = 1
 page = 1
+adjs = ["great", "complex", "fascinating", "interesting", "engaging"]
 
 def main(chapter, page, text, chapter_count, pages_per_chapter):
   generate_chapter_info(chapter, page, chapter_count, pages_per_chapter)
@@ -41,24 +42,31 @@ def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
         vocab = generate_vocab(page, pages_per_chapter, word, definition)
         significant_statement, significant_word = random.choice(list(significant_statements.items()))
         rationale = generate_rationale(i%3, significant_word)
-        main_idea = cut_sentence(generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]))
+        main_idea, sentence1, sentence2 = cut_sentence(generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]))
+        reflection = generate_reflection(i%4, sentence1, sentence2, adjs[i%4])
         print(locative_info)
         print(vocab)
         print("Connotation: " + "\"" + connotation + "\"")
         print("Page " + str(random.randint(page, page+pages_per_chapter-1)) + ", Significant Statement: " + significant_statement)
         print("Rationale: " + rationale)
-        print(main_idea + "\n")
+        print(main_idea)
+        print("Reflection: " + reflection + "\n")
         chapter += 1
         page += pages_per_chapter
 
 def cut_sentence(sentence):
   sentences = sentence.split(".")
   first_two_sentences = ". ".join(sentences[:2]) + "."
-  return first_two_sentences
+  return first_two_sentences, sentences[0][11:], sentences[1]
 
 def generate_rationale(version, significant_word):
   versions = [f"This quote from the book is significant. They use the word {significant_word}. It shows the heroism in the statement.",
   f"I thought the use of the word {significant_word} showed the heroism in the actions. It definitely stands out as a powerful statement.", f"When the author uses the word {significant_word}, it shows heroism."]
+
+  return versions[version]
+
+def generate_reflection(version, sentence1, sentence2, adj):
+  versions = [f"I thought that {sentence1} was an interesting part and made it a memorable chapter. {sentence2} was an intriguing moment.", f"I liked this chapter because of {sentence1}. I thought it was a really {adj} chapter.", f"I’m looking forward to seeing how this story turns out. It’s really engaging so far. I thought {sentence1} was a really interesting part.", f"I look forward to learning more about {sentence1}. This chapter set up a lot of stuff and it was great."]
 
   return versions[version]
 
