@@ -27,7 +27,7 @@ chapter = 1
 page = 1
 adjs = ["great", "complex", "fascinating", "interesting", "engaging"]
 
-def main(chapter, page, text, chapter_count, pages_per_chapter):
+def main(chapter, page, chapter_count, pages_per_chapter):
   print_or_export = input("Do you want to Print the reading logs, or Export them to txt?: ")
   generate_chapter_info(chapter, page, chapter_count, pages_per_chapter, print_or_export)
 
@@ -189,7 +189,7 @@ def generate_words():
   return words
 
 if __name__ == "__main__":
-    main(chapter, page, text, chapter_count, pages_per_chapter)
+    main(chapter, page, chapter_count, pages_per_chapter)
 
 # import nltk
 # import ssl
