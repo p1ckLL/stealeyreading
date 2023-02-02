@@ -1,5 +1,4 @@
 import random
-import re
 from nltk.corpus import wordnet
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -8,6 +7,7 @@ from sumy.summarizers.lex_rank import LexRankSummarizer
 book_file = open('theonceandfutureking.txt', 'r')
 heroic_words = open("heroicwords.txt", 'r')
 common_words = open("commonwords.txt", 'r')
+reading_log_file = open("readinglogs.txt", "w")
 
 text = book_file.read()
 
@@ -28,31 +28,49 @@ page = 1
 adjs = ["great", "complex", "fascinating", "interesting", "engaging"]
 
 def main(chapter, page, text, chapter_count, pages_per_chapter):
-  generate_chapter_info(chapter, page, chapter_count, pages_per_chapter)
+  print_or_export = input("Do you want to Print the reading logs, or Export them to txt?: ")
+  generate_chapter_info(chapter, page, chapter_count, pages_per_chapter, print_or_export)
 
-def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
+def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter, print_or_export):
     words = generate_words()
     significant_statements = generate_significant_statements()
+    reading_log_file.truncate(0)
 
     # Make reading log
     for i in range(1, chapter_count):
-        locative_info = generate_locative_info(chapter, page, pages_per_chapter)
-        word, definition = generate_word_def(words)
-        connotation = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False))
-        vocab = generate_vocab(page, pages_per_chapter, word, definition)
-        significant_statement, significant_word = random.choice(list(significant_statements.items()))
-        rationale = generate_rationale(i%3, significant_word)
-        main_idea, sentence1, sentence2 = cut_sentence(generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]))
-        reflection = generate_reflection(i%4, sentence1, sentence2, adjs[i%4])
-        print(locative_info)
-        print(vocab)
-        print("Connotation: " + "\"" + connotation + "\"")
-        print("Page " + str(random.randint(page, page+pages_per_chapter-1)) + ", Significant Statement: " + significant_statement)
-        print("Rationale: " + rationale)
-        print(main_idea)
-        print("Reflection: " + reflection + "\n")
-        chapter += 1
-        page += pages_per_chapter
+      locative_info = generate_locative_info(chapter, page, pages_per_chapter)
+      word, definition = generate_word_def(words)
+      connotation = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False))
+      vocab = generate_vocab(page, pages_per_chapter, word, definition)
+      significant_statement, significant_word = random.choice(list(significant_statements.items()))
+      rationale = generate_rationale(i%3, significant_word)
+      main_idea, sentence1, sentence2 = cut_sentence(generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]))
+      reflection = generate_reflection(i%4, sentence1, sentence2, adjs[i%4])
+      
+      out_reading_log(print_or_export, locative_info, vocab, connotation, significant_statement, rationale, main_idea, reflection, page, pages_per_chapter)
+      
+      chapter += 1
+      page += pages_per_chapter
+    reading_log_file.close()
+
+def out_reading_log(print_or_export, locative_info, vocab, connotation, significant_statement, rationale, main_idea, reflection, page, pages_per_chapter):
+  if print_or_export.lower() == "print":
+    print(locative_info)
+    print(vocab)
+    print("Connotation: " + "\"" + connotation + "\"")
+    print("Page " + str(random.randint(page, page+pages_per_chapter-1)) + ", Significant Statement: " + significant_statement)
+    print("Rationale: " + rationale)
+    print(main_idea)
+    print("Reflection: " + reflection + "\n")
+  if print_or_export.lower() == "export":
+    print("Exporting...")
+    reading_log_file.write(locative_info + "\n")
+    reading_log_file.write(vocab + "\n")
+    reading_log_file.write("Connotation: " + "\"" + connotation + "\"" + "\n")
+    reading_log_file.write("Page " + str(random.randint(page, page+pages_per_chapter-1)) + ", Significant Statement: " + significant_statement + "\n")
+    reading_log_file.write("Rationale: " + rationale + "\n")
+    reading_log_file.write(main_idea + "\n")
+    reading_log_file.write("Reflection: " + reflection + "\n" + "\n")
 
 def cut_sentence(sentence):
   sentences = sentence.split(".")
