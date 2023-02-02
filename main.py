@@ -39,12 +39,14 @@ def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter):
         word, definition = generate_word_def(words)
         connotation = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False))
         vocab = generate_vocab(page, pages_per_chapter, word, definition)
-        significant_statement = significant_statements[i%len(significant_statements)]
+        significant_statement, significant_word = random.choice(list(significant_statements.items()))
+        rationale = generate_rationale(i%3, significant_word)
         main_idea = cut_sentence(generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]))
         print(locative_info)
         print(vocab)
         print("Connotation: " + "\"" + connotation + "\"")
         print("Page " + str(random.randint(page, page+pages_per_chapter-1)) + ", Significant Statement: " + significant_statement)
+        print("Rationale: " + rationale)
         print(main_idea + "\n")
         chapter += 1
         page += pages_per_chapter
@@ -53,6 +55,12 @@ def cut_sentence(sentence):
   sentences = sentence.split(".")
   first_two_sentences = ". ".join(sentences[:2]) + "."
   return first_two_sentences
+
+def generate_rationale(version, significant_word):
+  versions = [f"This quote from the book is significant. They use the word {significant_word}. It shows the heroism in the statement.",
+  f"I thought the use of the word {significant_word} showed the heroism in the actions. It definitely stands out as a powerful statement.", f"When the author uses the word {significant_word}, it shows heroism."]
+
+  return versions[version]
 
 def split_on_chapters(text):
   start = 0
@@ -71,11 +79,11 @@ def split_on_chapters(text):
   return chapters
 
 def generate_significant_statements():
-  statements = []
+  statements = {}
   for word in heroic_text:
     statement = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=True, keep_punctuation=False))
     if statement:
-      statements.append(statement)
+      statements[statement] = word
   return statements
 
 def generate_main_idea(text):
