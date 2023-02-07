@@ -1,8 +1,4 @@
 import random
-from nltk.corpus import wordnet
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.lex_rank import LexRankSummarizer
 from transformers import pipeline
 
 book_file = open('theonceandfutureking.txt', 'r')
