@@ -3,6 +3,7 @@ from nltk.corpus import wordnet
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lex_rank import LexRankSummarizer
+from transformers import pipeline
 
 book_file = open('theonceandfutureking.txt', 'r')
 heroic_words = open("heroicwords.txt", 'r')
@@ -27,6 +28,8 @@ chapter = 1
 page = 1
 adjs = ["great", "complex", "fascinating", "interesting", "engaging"]
 
+model = pipeline("summarization")
+
 def main(chapter, page, chapter_count, pages_per_chapter):
   print_or_export = input("Do you want to Print the reading logs, or Export them to txt?: ")
   generate_chapter_info(chapter, page, chapter_count, pages_per_chapter, print_or_export)
@@ -42,7 +45,7 @@ def generate_chapter_info(chapter, page, chapter_count, pages_per_chapter, print
       word, definition = generate_word_def(words)
       connotation = find_sentence(word, split_book(keep_periods=True, return_string=False, keep_caps=False, keep_punctuation=False))
       vocab = generate_vocab(page, pages_per_chapter, word, definition)
-      significant_statement, significant_word = random.choice(list(significant_statements.items()))
+      significant_statement, significant_word = list(significant_statements.items())[i%len(significant_statements)]
       rationale = generate_rationale(i%3, significant_word)
       main_idea, sentence1, sentence2 = cut_sentence(generate_main_idea(split_on_chapters(split_book(True, True, True, False))[i]))
       reflection = generate_reflection(i%4, sentence1, sentence2, adjs[i%4])
@@ -72,10 +75,9 @@ def out_reading_log(print_or_export, locative_info, vocab, connotation, signific
     reading_log_file.write(main_idea + "\n")
     reading_log_file.write("Reflection: " + reflection + "\n" + "\n")
 
-def cut_sentence(sentence):
-  sentences = sentence.split(".")
-  first_two_sentences = ". ".join(sentences[:2]) + "."
-  return first_two_sentences, sentences[0][11:], sentences[1]
+def cut_sentence(main_idea):
+  sentences = main_idea.split(".")
+  return main_idea, sentences[0][11:], sentences[1]
 
 def generate_rationale(version, significant_word):
   versions = [f"This quote from the book is significant. They use the word {significant_word}. It shows the heroism in the statement.",
@@ -113,13 +115,9 @@ def generate_significant_statements():
   return statements
 
 def generate_main_idea(text):
-  parser = PlaintextParser.from_string(text, Tokenizer("english"))
-  summarizer = LexRankSummarizer()
+  result = model(text[:1024], max_length=100, min_length=30)
 
-  summary = summarizer(parser.document, 1)
-  joined_summary = " ".join([str(sent) for sent in summary])
-
-  return "Main Idea: " + joined_summary
+  return "Main Idea: " + result[0]['summary_text']
 
 def generate_locative_info(chapter, page, pages_per_chapter):
   return f"Chapter {chapter}, Pages {page}-{page+pages_per_chapter-1}"
