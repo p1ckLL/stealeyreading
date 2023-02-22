@@ -1,5 +1,6 @@
 import random
 from transformers import pipeline
+from nltk.corpus import wordnet
 
 book_file = open('theonceandfutureking.txt', 'r')
 heroic_words = open("heroicwords.txt", 'r')
